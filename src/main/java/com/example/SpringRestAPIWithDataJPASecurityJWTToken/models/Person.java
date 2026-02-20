@@ -1,6 +1,9 @@
 package com.example.SpringRestAPIWithDataJPASecurityJWTToken.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table
@@ -12,9 +15,12 @@ public class Person {
     private int id;
 
     @Column(name = "username")
+    @NotEmpty
+    @Size(min = 3, max = 50, message = "Username должен быть в диапозоне от 3 до 50 символов")
     private String username;
 
     @Column(name = "year_of_birth")
+    @Min(value = 1900)
     private int yearOfBirth;
 
     @Column(name = "password")
