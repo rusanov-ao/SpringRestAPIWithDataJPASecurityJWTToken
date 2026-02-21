@@ -35,12 +35,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .requestMatchers("/auth/login", "/auth/registration", "/error").permitAll()
-                        .anyRequest().hasAnyRole("ROLE_ADMIN", "ROLE_USER")
+                        .anyRequest().hasAnyRole("USER", "ADMIN")
                 )
                 .formLogin(form -> form
                         .loginPage("/auth/login")
                         .loginProcessingUrl("/process_login")
-                        .defaultSuccessUrl("/hello")
+                        .defaultSuccessUrl("/hello", true)
                         .failureUrl("/auth/login?error")
                 )
                 .logout(logout -> logout
@@ -48,12 +48,12 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/auth/login")
                 )
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // без сессий для JWT
                 );
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();// обязательно в конце!
+        return http.build();  // обязательно в конце!
     }
 
     @Bean
