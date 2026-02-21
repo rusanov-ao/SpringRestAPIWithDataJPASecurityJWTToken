@@ -43,7 +43,7 @@ public class AuthController {
 
     @GetMapping("/login")
     public String login() {
-        return "auth/login";
+        return "Вход выполнен успешно";
     }
 
     @GetMapping("/registration")
