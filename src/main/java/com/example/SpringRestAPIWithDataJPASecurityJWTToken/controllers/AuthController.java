@@ -5,10 +5,15 @@ import com.example.SpringRestAPIWithDataJPASecurityJWTToken.dto.PersonDTO;
 import com.example.SpringRestAPIWithDataJPASecurityJWTToken.models.Person;
 import com.example.SpringRestAPIWithDataJPASecurityJWTToken.security.JWTUtil;
 import com.example.SpringRestAPIWithDataJPASecurityJWTToken.services.RegistrationService;
+import com.example.SpringRestAPIWithDataJPASecurityJWTToken.util.PersonErrorResponse;
+import com.example.SpringRestAPIWithDataJPASecurityJWTToken.util.PersonNotCreatedException;
+import com.example.SpringRestAPIWithDataJPASecurityJWTToken.util.PersonNotFoundException;
 import com.example.SpringRestAPIWithDataJPASecurityJWTToken.util.PersonValidator;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -89,5 +94,25 @@ public class AuthController {
         String token = jwtUtil.generateToken(authenticationDTO.getUsername());
 
         return Map.of("jwt-token", token);
+    }
+
+    @ExceptionHandler
+    private ResponseEntity<PersonErrorResponse> handleException(PersonNotFoundException e) {
+        PersonErrorResponse personErrorResponse = new PersonErrorResponse(
+                "Person with this id wasn't found!",
+                System.currentTimeMillis()
+        );
+
+        return new ResponseEntity<>(personErrorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler
+    private ResponseEntity<PersonErrorResponse> handleException(PersonNotCreatedException e) {
+        PersonErrorResponse personErrorResponse = new PersonErrorResponse(
+                e.getMessage(),
+                System.currentTimeMillis()
+        );
+
+        return new ResponseEntity<>(personErrorResponse, HttpStatus.BAD_REQUEST);
     }
 }
