@@ -3,27 +3,16 @@ package com.example.SpringRestAPIWithDataJPASecurityJWTToken.dto;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 
-public class AuthenticationDTO {
+public record AuthenticationDTO(
+        @NotEmpty(message = "Имя пользователя не может быть пустым")
+        @Size(min = 3, max = 50, message = "Имя должно быть в диапазоне от 3 до 50 символов")
+        String username,
 
-    @NotEmpty
-    @Size(min = 3, max = 50, message = "Username должен быть в диапозоне от 3 до 50 символов")
-    private String username;
-
-    private String password;
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
+        @NotEmpty(message = "Пароль не может быть пустым")
+        String password
+) {
+    @Override
+    public String toString() {
+        return "AuthenticationDTO{username='" + username + "', password='***'}";
     }
 }

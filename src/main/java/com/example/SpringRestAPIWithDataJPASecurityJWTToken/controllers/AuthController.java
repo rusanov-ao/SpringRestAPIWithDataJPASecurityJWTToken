@@ -81,8 +81,8 @@ public class AuthController {
     @PostMapping("/login")
     public Map<String, String> performLogin(@RequestBody AuthenticationDTO authenticationDTO) {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                authenticationDTO.getUsername(),
-                authenticationDTO.getPassword()
+                authenticationDTO.username(),
+                authenticationDTO.password()
         );
 
         try {
@@ -91,7 +91,7 @@ public class AuthController {
             return Map.of("message", "Incorrect credentials!");
         }
 
-        String token = jwtUtil.generateToken(authenticationDTO.getUsername());
+        String token = jwtUtil.generateToken(authenticationDTO.username());
 
         return Map.of("jwt-token", token);
     }
