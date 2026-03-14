@@ -1,7 +1,8 @@
 package com.example.SpringRestAPIWithDataJPASecurityJWTToken.security;
 
 import com.example.SpringRestAPIWithDataJPASecurityJWTToken.models.Person;
-import org.jspecify.annotations.Nullable;
+import com.example.SpringRestAPIWithDataJPASecurityJWTToken.models.Role;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,6 +20,11 @@ public class PersonDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        Role role = person.getRole();
+
+        if (role == null) {
+            return Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")); // default role
+        }
         return Collections.singleton(new SimpleGrantedAuthority(person.getRole().toString()));
     }
 
