@@ -7,6 +7,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,6 +20,8 @@ import java.io.IOException;
 @Component
 public class JWTFilter extends OncePerRequestFilter {
 
+    private static final Logger logger = LoggerFactory.getLogger(JWTFilter.class);
+
     private final JWTUtil jwtUtil;
     private final PersonDetailService personDetailService;
 
@@ -28,35 +32,40 @@ public class JWTFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
-            HttpServletRequest httpServletRequest,
-            HttpServletResponse httpServletResponse,
+            HttpServletRequest request,
+            HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
 
-        String authHeader = httpServletRequest.getHeader("Authorization");
+        String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
 
             if (token.isBlank()) {
-                httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                        "Invalid JWT token in Bearer Header");
-            } else {
-                try {
-                    String username = jwtUtil.validateTokenAndRetrieveClaim(token);
+                logger.warn("Empty JWT token in Authorization header");
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid JWT token in Bearer Header");
+                return;
+            }
 
-                    UserDetails userDetails = personDetailService.loadUserByUsername(username);
+            try {
+                String username = jwtUtil.validateTokenAndRetrieveClaim(token);
+                UserDetails userDetails = personDetailService.loadUserByUsername(username);
 
-                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                            userDetails, userDetails.getPassword(), userDetails.getAuthorities());
+                // ✅ Пароль не нужен — токен уже доказал аутентичность
+                var authenticationToken = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
 
-                    if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                    }
-                } catch (JWTVerificationException e) {
-                    httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid JWT token");
-                }
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+                logger.debug("User authenticated: {}", username);
+
+            } catch (JWTVerificationException e) {
+                logger.warn("Invalid JWT token: {}", e.getMessage());
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token");
+                return;
             }
         }
-        filterChain.doFilter(httpServletRequest, httpServletResponse);
+
+        filterChain.doFilter(request, response);
     }
 }
