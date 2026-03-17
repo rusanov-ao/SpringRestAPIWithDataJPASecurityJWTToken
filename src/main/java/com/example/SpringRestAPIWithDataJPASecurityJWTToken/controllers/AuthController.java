@@ -1,118 +1,70 @@
 package com.example.SpringRestAPIWithDataJPASecurityJWTToken.controllers;
 
 import com.example.SpringRestAPIWithDataJPASecurityJWTToken.dto.AuthenticationDTO;
-import com.example.SpringRestAPIWithDataJPASecurityJWTToken.dto.PersonDTO;
-import com.example.SpringRestAPIWithDataJPASecurityJWTToken.models.Person;
+import com.example.SpringRestAPIWithDataJPASecurityJWTToken.dto.PersonRequestDTO;
 import com.example.SpringRestAPIWithDataJPASecurityJWTToken.security.JWTUtil;
 import com.example.SpringRestAPIWithDataJPASecurityJWTToken.services.RegistrationService;
-import com.example.SpringRestAPIWithDataJPASecurityJWTToken.util.PersonErrorResponse;
-import com.example.SpringRestAPIWithDataJPASecurityJWTToken.util.PersonNotCreatedException;
-import com.example.SpringRestAPIWithDataJPASecurityJWTToken.util.PersonNotFoundException;
-import com.example.SpringRestAPIWithDataJPASecurityJWTToken.util.PersonValidator;
+import com.example.SpringRestAPIWithDataJPASecurityJWTToken.util.AuthResponseDTO;
 import jakarta.validation.Valid;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")
+
 public class AuthController {
 
-    private final PersonValidator personValidator;
     private final JWTUtil jwtUtil;
     private final RegistrationService registrationService;
-    private final ModelMapper modelMapper;
     private final AuthenticationManager authenticationManager;
 
-    @Autowired
+    // ✅ @Autowired не нужен для единственного конструктора
     public AuthController(
-            PersonValidator personValidator,
             JWTUtil jwtUtil,
             RegistrationService registrationService,
-            ModelMapper modelMapper,
             AuthenticationManager authenticationManager) {
-        this.personValidator = personValidator;
         this.jwtUtil = jwtUtil;
         this.registrationService = registrationService;
-        this.modelMapper = modelMapper;
         this.authenticationManager = authenticationManager;
     }
 
-    @GetMapping("/login")
-    public String login() {
-        return "Вход выполнен успешно";
-    }
-
-    @GetMapping("/registration")
-    public String registrationPage(@ModelAttribute("person") Person person) {
-        return "auth/registration";
-    }
-
+    // ✅ POST для регистрации, 201 Created при успехе
     @PostMapping("/registration")
-    public Map<String, String> performRegistration(@RequestBody @Valid PersonDTO personDTO, BindingResult bindingResult) {
+    public ResponseEntity<AuthResponseDTO> performRegistration(
+            @RequestBody @Valid PersonRequestDTO personDTO) {
 
-        Person person = convertToPerson(personDTO);
+        // ✅ Сервис возвращает Person, маппим в ResponseDTO
+        var person = registrationService.register(personDTO);
+        var token = jwtUtil.generateToken(person.getUsername());
 
-        personValidator.validate(person, bindingResult);
-
-        if (bindingResult.hasErrors()) {
-            return Map.of("message", "Ошибка");
-        }
-
-        registrationService.register(person);
-
-        String token = jwtUtil.generateToken(person.getUsername());
-
-        return Map.of("jwt-token", token);
+        return ResponseEntity.status(201).body(new AuthResponseDTO(token));
     }
 
-    private Person convertToPerson(PersonDTO personDTO) {
-        return modelMapper.map(personDTO, Person.class);
-    }
-
+    // ✅ POST для логина, 200 OK при успехе
     @PostMapping("/login")
-    public Map<String, String> performLogin(@RequestBody AuthenticationDTO authenticationDTO) {
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                authenticationDTO.username(),
-                authenticationDTO.password()
-        );
+    public ResponseEntity<AuthResponseDTO> performLogin(
+            @RequestBody @Valid AuthenticationDTO authDTO) {
 
         try {
-            authenticationManager.authenticate(authenticationToken);
+            // ✅ Аутентификация через Spring Security
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            authDTO.username(),
+                            authDTO.password()
+                    )
+            );
         } catch (BadCredentialsException e) {
-            return Map.of("message", "Incorrect credentials!");
+            // ✅ Выбрасываем исключение, а не возвращаем Map
+            throw new BadCredentialsException("Неверное имя пользователя или пароль");
         }
 
-        String token = jwtUtil.generateToken(authenticationDTO.username());
-
-        return Map.of("jwt-token", token);
-    }
-
-    @ExceptionHandler
-    private ResponseEntity<PersonErrorResponse> handleException(PersonNotFoundException e) {
-        PersonErrorResponse personErrorResponse = new PersonErrorResponse(
-                "Person with this id wasn't found!",
-                System.currentTimeMillis()
-        );
-
-        return new ResponseEntity<>(personErrorResponse, HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler
-    private ResponseEntity<PersonErrorResponse> handleException(PersonNotCreatedException e) {
-        PersonErrorResponse personErrorResponse = new PersonErrorResponse(
-                e.getMessage(),
-                System.currentTimeMillis()
-        );
-
-        return new ResponseEntity<>(personErrorResponse, HttpStatus.BAD_REQUEST);
+        var token = jwtUtil.generateToken(authDTO.username());
+        return ResponseEntity.ok(new AuthResponseDTO(token));
     }
 }
