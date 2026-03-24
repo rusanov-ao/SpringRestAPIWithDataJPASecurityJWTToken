@@ -4,7 +4,7 @@ import com.example.SpringRestAPIWithDataJPASecurityJWTToken.dto.AuthenticationDT
 import com.example.SpringRestAPIWithDataJPASecurityJWTToken.dto.PersonRequestDTO;
 import com.example.SpringRestAPIWithDataJPASecurityJWTToken.security.JWTUtil;
 import com.example.SpringRestAPIWithDataJPASecurityJWTToken.services.RegistrationService;
-import com.example.SpringRestAPIWithDataJPASecurityJWTToken.util.AuthResponseDTO;
+import com.example.SpringRestAPIWithDataJPASecurityJWTToken.dto.AuthResponseDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
