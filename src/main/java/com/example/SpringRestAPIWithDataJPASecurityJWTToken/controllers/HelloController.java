@@ -1,13 +1,17 @@
 package com.example.SpringRestAPIWithDataJPASecurityJWTToken.controllers;
 
+import com.example.SpringRestAPIWithDataJPASecurityJWTToken.dto.PersonResponseDTO;
 import com.example.SpringRestAPIWithDataJPASecurityJWTToken.security.PersonDetails;
 import com.example.SpringRestAPIWithDataJPASecurityJWTToken.services.AdminService;
+import com.example.SpringRestAPIWithDataJPASecurityJWTToken.util.HelloResponse;
+import com.example.SpringRestAPIWithDataJPASecurityJWTToken.util.UserInfoResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 public class HelloController {
@@ -19,22 +23,30 @@ public class HelloController {
     }
 
     @GetMapping("/hello")
-    public String sayHello() {
-        return "hello";
+    public ResponseEntity<HelloResponse> sayHello() {
+        return ResponseEntity.ok(new HelloResponse("Hello, World!"));
     }
 
     @GetMapping("/showUserInfo")
-    @ResponseBody
-    public String showUserInfo() {
+    public ResponseEntity<UserInfoResponse> showUserInfo() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        PersonDetails personDetails = (PersonDetails) authentication.getPrincipal();
 
-        return personDetails.getUsername();
+        // ✅ Безопасное приведение типов (Java 16+ Pattern Matching)
+        if (authentication.getPrincipal() instanceof PersonDetails personDetails) {
+            return ResponseEntity.ok(
+                    new UserInfoResponse(
+                            personDetails.getUsername(),
+                            personDetails.getPerson().getRole()
+                    )
+            );
+        }
+        return ResponseEntity.ok(new UserInfoResponse("Anonymous", null));
     }
 
     @GetMapping("/admin")
-    public String adminPage() {
-        adminService.doAdminStuff();
-        return "Страница админа";
+    public ResponseEntity<List<PersonResponseDTO>> adminPage() {
+        // ✅ Вызываем реальный метод сервиса вместо doAdminStuff()
+        List<PersonResponseDTO> users = adminService.getAllUsers();
+        return ResponseEntity.ok(users);
     }
 }
