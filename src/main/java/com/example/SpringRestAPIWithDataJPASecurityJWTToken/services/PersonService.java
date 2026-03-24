@@ -3,6 +3,7 @@ package com.example.SpringRestAPIWithDataJPASecurityJWTToken.services;
 import com.example.SpringRestAPIWithDataJPASecurityJWTToken.dto.PersonRequestDTO;
 import com.example.SpringRestAPIWithDataJPASecurityJWTToken.dto.PersonResponseDTO;
 import com.example.SpringRestAPIWithDataJPASecurityJWTToken.models.Person;
+import com.example.SpringRestAPIWithDataJPASecurityJWTToken.models.Role;
 import com.example.SpringRestAPIWithDataJPASecurityJWTToken.repositories.PeopleRepository;
 import com.example.SpringRestAPIWithDataJPASecurityJWTToken.util.PersonNotFoundException;
 import com.example.SpringRestAPIWithDataJPASecurityJWTToken.util.UsernameAlreadyExistsException;
@@ -50,6 +51,7 @@ public class PersonService {
                 .username(personDTO.getUsername())
                 .yearOfBirth(personDTO.getYearOfBirth())
                 .password(passwordEncoder.encode(personDTO.getPassword()))
+                .role(Role.ROLE_USER)
                 .build();
 
         return mapToResponse(peopleRepository.save(person));
