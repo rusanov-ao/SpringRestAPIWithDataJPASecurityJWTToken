@@ -2,6 +2,7 @@ package com.example.SpringRestAPIWithDataJPASecurityJWTToken.util;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -14,6 +15,16 @@ import java.util.stream.Collectors;
  */
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<PersonErrorResponse> handleAccessDenied(AccessDeniedException e) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)  // 403
+                .body(new PersonErrorResponse(
+                        "Доступ запрещен: у вас недостаточно прав для выполнения этой операции",
+                        System.currentTimeMillis()
+                ));
+    }
 
     @ExceptionHandler(PersonNotFoundException.class)
     public ResponseEntity<PersonErrorResponse> handleNotFound(PersonNotFoundException e) {

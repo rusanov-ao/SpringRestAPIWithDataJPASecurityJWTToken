@@ -36,7 +36,7 @@ public class SecurityConfig {
                 // ✅ Убираем formLogin/logout — для JWT они не нужны
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/login", "/auth/registration", "/error").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN") // ✅ /** для всех подпутей
+//                        .requestMatchers("/admin/**").hasRole("ADMIN") // ✅ /** для всех подпутей
                         .anyRequest().hasAnyRole("USER", "ADMIN")
                 )
 

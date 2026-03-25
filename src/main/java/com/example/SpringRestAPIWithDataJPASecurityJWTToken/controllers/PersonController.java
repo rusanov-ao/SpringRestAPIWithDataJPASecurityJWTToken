@@ -21,38 +21,36 @@ public class PersonController {
         this.personService = personService;
     }
 
-    // ✅ GET /people - список всех пользователей (доступно USER и ADMIN)
+    //список всех пользователей
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PersonResponseDTO>> getPeople() {
         List<PersonResponseDTO> people = personService.findAll();
         return ResponseEntity.ok(people);
     }
 
-    // ✅ GET /people/{id} - один пользователь по ID
+    // один пользователь по ID
     @GetMapping("/{id}")
     public ResponseEntity<PersonResponseDTO> getPerson(@PathVariable Long id) {
         PersonResponseDTO person = personService.findById(id);
         return ResponseEntity.ok(person);
     }
 
-    // ✅ POST /people - создание нового пользователя
+    // создание нового пользователя
     @PostMapping
-    public ResponseEntity<PersonResponseDTO> createPerson(
-            @RequestBody @Valid PersonRequestDTO personDTO) {
+    public ResponseEntity<PersonResponseDTO> createPerson(@RequestBody @Valid PersonRequestDTO personDTO) {
         PersonResponseDTO person = personService.create(personDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(person);
     }
 
-    // ✅ PUT /people/{id} - обновление пользователя
+    // обновление пользователя
     @PutMapping("/{id}")
-    public ResponseEntity<PersonResponseDTO> updatePerson(
-            @PathVariable Long id,
-            @RequestBody @Valid PersonRequestDTO personDTO) {
+    public ResponseEntity<PersonResponseDTO> updatePerson(@PathVariable Long id, @RequestBody @Valid PersonRequestDTO personDTO) {
         PersonResponseDTO person = personService.update(id, personDTO);
         return ResponseEntity.ok(person);
     }
 
-    // ✅ DELETE /people/{id} - удаление пользователя (только ADMIN)
+    // удаление пользователя (только ADMIN)
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deletePerson(@PathVariable Long id) {
