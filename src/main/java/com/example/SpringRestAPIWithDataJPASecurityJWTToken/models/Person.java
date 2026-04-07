@@ -3,7 +3,7 @@ package com.example.SpringRestAPIWithDataJPASecurityJWTToken.models;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Entity
+@Entity // Помечает класс как JPA-сущность
 @Table(name = "person")
 @Data // Lombok: генерирует геттеры, сеттеры, toString, equals, hashCode
 @NoArgsConstructor // Конструктор без аргументов (нужен для JPA)
