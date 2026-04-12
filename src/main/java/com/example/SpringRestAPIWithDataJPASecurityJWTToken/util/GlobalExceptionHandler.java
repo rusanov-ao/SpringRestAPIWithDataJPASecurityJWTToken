@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.util.stream.Collectors;
 
 /**
- * Чтобы ошибки возвращались в формате JSON (а не HTML)
+ * Eдиный центр управления ошибками
+ * Этот класс гарантирует, что все ошибки возвращаются клиенту в одинаковом, понятном формате (JSON),
+ * а не в виде стандартных HTML-страниц или стектрейсов
  */
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -20,31 +22,39 @@ public class GlobalExceptionHandler {
     public ResponseEntity<PersonErrorResponse> handleAccessDenied(AccessDeniedException e) {
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)  // 403
-                .body(new PersonErrorResponse(
-                        "Доступ запрещен: у вас недостаточно прав для выполнения этой операции",
-                        System.currentTimeMillis()
-                ));
+                .body(
+                        new PersonErrorResponse(
+                                "Доступ запрещен: у вас недостаточно прав для выполнения этой операции",
+                                System.currentTimeMillis()
+                        )
+                );
     }
 
     @ExceptionHandler(PersonNotFoundException.class)
     public ResponseEntity<PersonErrorResponse> handleNotFound(PersonNotFoundException e) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(new PersonErrorResponse(e.getMessage(), System.currentTimeMillis()));
+                .body(
+                        new PersonErrorResponse(e.getMessage(), System.currentTimeMillis())
+                );
     }
 
     @ExceptionHandler(UsernameAlreadyExistsException.class)
     public ResponseEntity<PersonErrorResponse> handleConflict(UsernameAlreadyExistsException e) {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(new PersonErrorResponse(e.getMessage(), System.currentTimeMillis()));
+                .body(
+                        new PersonErrorResponse(e.getMessage(), System.currentTimeMillis())
+                );
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<PersonErrorResponse> handleBadCredentials(BadCredentialsException e) {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
-                .body(new PersonErrorResponse(e.getMessage(), System.currentTimeMillis()));
+                .body(
+                        new PersonErrorResponse(e.getMessage(), System.currentTimeMillis())
+                );
     }
 
     // ✅ Обработка ошибок валидации (@Valid)
@@ -58,7 +68,9 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new PersonErrorResponse(errors, System.currentTimeMillis()));
+                .body(
+                        new PersonErrorResponse(errors, System.currentTimeMillis())
+                );
     }
 
     // ✅ Обработка остальных исключений
@@ -66,6 +78,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<PersonErrorResponse> handleGeneral(Exception e) {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new PersonErrorResponse("Произошла ошибка на сервере", System.currentTimeMillis()));
+                .body(
+                        new PersonErrorResponse("Произошла ошибка на сервере", System.currentTimeMillis())
+                );
     }
 }
