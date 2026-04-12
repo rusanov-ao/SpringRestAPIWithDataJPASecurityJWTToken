@@ -10,6 +10,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
+/**
+ * PersonDetails — это адаптер, который «переводит» класс Person на язык Spring Security.
+ * Spring Security требует объект типа UserDetails для работы аутентификации
+ */
 public class PersonDetails implements UserDetails {
 
     private final Person person;
