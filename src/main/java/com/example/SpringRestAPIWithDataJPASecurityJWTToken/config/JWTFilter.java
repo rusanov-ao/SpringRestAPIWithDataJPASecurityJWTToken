@@ -17,6 +17,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * Это фильтр безопасности, который перехватывает каждый HTTP-запрос для проверки аутентификации через JWT.
+ * OncePerRequestFilter — это базовый класс Spring для фильтров, который гарантирует,
+ * что фильтр выполнится ровно один раз за запрос, даже если в приложении есть форварды или инклюды.
+ */
 @Component
 public class JWTFilter extends OncePerRequestFilter {
 
@@ -36,7 +41,7 @@ public class JWTFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
+        String authHeader = request.getHeader("Authorization"); // Извлечение заголовка Authorization
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
@@ -44,28 +49,29 @@ public class JWTFilter extends OncePerRequestFilter {
             if (token.isBlank()) {
                 logger.warn("Empty JWT token in Authorization header");
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid JWT token in Bearer Header");
-                return;
+                return; // Прерываем выполнение
             }
 
             try {
                 String username = jwtUtil.validateTokenAndRetrieveClaim(token);
                 UserDetails userDetails = personDetailService.loadUserByUsername(username);
 
-                // ✅ Пароль не нужен — токен уже доказал аутентичность
+                // Пароль не нужен — токен уже доказал аутентичность
                 var authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
 
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken); // «Сообщает» Spring Security: «Этот запрос делает аутентифицированный пользователь»
 
                 logger.debug("User authenticated: {}", username);
 
             } catch (JWTVerificationException e) {
                 logger.warn("Invalid JWT token: {}", e.getMessage());
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token");
-                return;
+                return; // Прерываем выполнение
             }
         }
 
+        // Если токен не был предоставлен (публичный эндпоинт) или был валиден — запрос обрабатывается дальше
         filterChain.doFilter(request, response);
     }
 }
