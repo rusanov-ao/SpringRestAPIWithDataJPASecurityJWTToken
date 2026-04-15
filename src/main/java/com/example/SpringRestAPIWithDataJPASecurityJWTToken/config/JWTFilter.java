@@ -57,6 +57,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 UserDetails userDetails = personDetailService.loadUserByUsername(username);
 
                 // Пароль не нужен — токен уже доказал аутентичность
+                // Создали объект аутентификации
                 var authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
 
