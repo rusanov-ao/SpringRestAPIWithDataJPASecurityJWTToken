@@ -16,7 +16,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity // Включает веб-безопасность Spring Security
 @EnableMethodSecurity
 public class SecurityConfig {
 
@@ -33,24 +33,26 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
 
-                // ✅ Убираем formLogin/logout — для JWT они не нужны
+                // Убираем formLogin/logout — для JWT они не нужны
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/auth/registration", "/error").permitAll()
-//                        .requestMatchers("/admin/**").hasRole("ADMIN") // ✅ /** для всех подпутей
-                        .anyRequest().hasAnyRole("USER", "ADMIN")
+                                .requestMatchers("/auth/login", "/auth/registration", "/error").permitAll()
+//                        .requestMatchers("/admin/**").hasRole("ADMIN") // для всех подпутей
+                                .anyRequest().hasAnyRole("USER", "ADMIN")
                 )
-
+// API не хранит состояние на сервере — вся аутентификация в токене
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // ✅ Возвращаем JSON при ошибках аутентификации/авторизации
+                // Возвращаем JSON при ошибках аутентификации/авторизации
                 .exceptionHandling(ex -> ex
+                        // Пользователь не аутентифицирован (нет токена или токен невалиден)
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setContentType("application/json");
                             response.setStatus(401);
                             response.getWriter().write("{\"error\": \"Unauthorized: " + authException.getMessage() + "\"}");
                         })
+                        // Пользователь аутентифицирован, но не имеет прав (не та роль)
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             response.setContentType("application/json");
                             response.setStatus(403);
@@ -58,9 +60,10 @@ public class SecurityConfig {
                         })
                 );
 
+        // Добавление JWTFilter в цепочку
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
+        return http.build(); // Возврат построенной цепочки
     }
 
     @Bean
