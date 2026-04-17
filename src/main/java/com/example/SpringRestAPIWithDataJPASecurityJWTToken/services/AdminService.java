@@ -20,7 +20,7 @@ public class AdminService {
         this.peopleRepository = peopleRepository;
     }
 
-    @PreAuthorize("hasRole('ADMIN')") // ✅ Без префикса ROLE_
+    @PreAuthorize("hasRole('ADMIN')") // Без префикса ROLE_
     @Transactional(readOnly = true)
     public List<PersonResponseDTO> getAllUsers() {
         return peopleRepository.findAll().stream()
@@ -36,7 +36,7 @@ public class AdminService {
         peopleRepository.deleteById(id);
     }
 
-    // Маппинг внутри сервиса (или вынеси в отдельный маппер)
+    // Маппинг внутри сервиса
     private PersonResponseDTO mapToResponse(Person person) {
         return new PersonResponseDTO(
                 person.getId(),

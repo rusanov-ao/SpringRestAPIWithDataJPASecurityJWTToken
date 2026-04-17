@@ -81,7 +81,6 @@ public class PersonService {
         peopleRepository.deleteById(id);
     }
 
-    // ✅ Маппинг Entity → ResponseDTO
     private PersonResponseDTO mapToResponse(Person person) {
         return new PersonResponseDTO(
                 person.getId(),

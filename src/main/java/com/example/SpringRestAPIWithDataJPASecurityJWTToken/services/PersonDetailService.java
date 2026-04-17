@@ -11,6 +11,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+/**
+ * это реализация интерфейса UserDetailsService для загрузки пользователя по имени.
+ */
 @Service
 public class PersonDetailService implements UserDetailsService {
 
