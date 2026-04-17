@@ -24,12 +24,11 @@ public class RegistrationService {
 
     @Transactional
     public Person register(PersonRequestDTO personDTO) {
-        // ✅ Проверка на существующего пользователя
+        // Проверка на существующего пользователя
         if (peopleRepository.findByUsername(personDTO.getUsername()).isPresent()) {
             throw new UsernameAlreadyExistsException("Пользователь с таким именем уже существует");
         }
 
-        // ✅ Маппинг DTO → Entity
         Person person = Person.builder()
                 .username(personDTO.getUsername())
                 .yearOfBirth(personDTO.getYearOfBirth())
@@ -37,6 +36,6 @@ public class RegistrationService {
                 .role(Role.ROLE_USER)
                 .build();
 
-        return peopleRepository.save(person); // ✅ Возвращаем сохранённого пользователя
+        return peopleRepository.save(person); // Возвращаем сохранённого пользователя
     }
 }

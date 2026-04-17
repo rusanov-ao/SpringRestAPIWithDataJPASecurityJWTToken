@@ -21,7 +21,7 @@ public class PersonController {
         this.personService = personService;
     }
 
-    //список всех пользователей
+    // список всех пользователей
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PersonResponseDTO>> getPeople() {
@@ -45,7 +45,9 @@ public class PersonController {
 
     // обновление пользователя
     @PutMapping("/{id}")
-    public ResponseEntity<PersonResponseDTO> updatePerson(@PathVariable Long id, @RequestBody @Valid PersonRequestDTO personDTO) {
+    public ResponseEntity<PersonResponseDTO> updatePerson(
+            @PathVariable Long id,
+            @RequestBody @Valid PersonRequestDTO personDTO) {
         PersonResponseDTO person = personService.update(id, personDTO);
         return ResponseEntity.ok(person);
     }
